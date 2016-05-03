@@ -7,17 +7,18 @@ socket.on('morseToText', function (data) {
 	console.log(data)
 	$("#translation").val(data.text)
 })
-socket.on('textToMorse', function (data) {
-	console.log(data)
-	$("#codeMorse").val(data.text)
-})
 socket.on('connection', function (data) {
 	$('#connect').click((e) => {
 		$.ajax({
 			type: 'POST',
 			url: '/connect',
 			success: function(result) {
-				console.log(result)
+				if(result.status){
+					$("#stateConection")
+						.removeClass("label-danger")
+						.addClass("label-success")
+						.html(result.msg)
+				}
 			}
 		})
 	})
@@ -26,7 +27,6 @@ socket.on('connection', function (data) {
 			type: 'POST',
 			url: '/disconnect',
 			success: function(result) {
-				console.log(result)
 			}
 		})
 	})
@@ -36,7 +36,7 @@ socket.on('connection', function (data) {
 			url: '/toMorse',
 			data: {text: $('#translation').val()},
 			success: function(result) {
-				console.log(result)
+				$("#codeMorse").val(result)
 			}
 		})
 	})

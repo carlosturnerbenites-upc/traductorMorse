@@ -3,17 +3,34 @@ html(lang="en")
 head
 	meta(charset="UTF-8")
 	title Traductor | Codigo Morse
+	link(rel="stylesheet", href="/css/lib/bootstrap.min.css")
 body
-	h1 Traductor Codigo Morse
+	h1.text-center Traductor Codigo Morse
+	section.panel.container-fluid
+		section.row
+			article.btn-group
+				button(type="button" class="btn btn-success" id="connect") Conectar
+			article.btn-group
+				button(type="button" class="btn btn-danger" id="disconnect") Desconectar
 
-	section
-		button(type="button" id="connect") Conectar
-		button(type="button" id="disconnect") Desconectar
-		button(type="button" id="toMorse") Texto a Morse
+		p
+			span Estado
+			span#stateConection.label.label-danger Desconectado
 
-	section
-		textarea(id="codeMorse" name="codeMorse")
-		textarea(id="translation" name="translation")
+		hr
+
+		section.row
+			div(class="form-group")
+				label.col-sm-1.control-label(for="codeMorse") Morse
+				div.col-sm-11
+					textarea.form-control(id="codeMorse" name="codeMorse")
+			div.form-group
+				label.col-sm-1.control-label(for="translation") Texto
+				div.col-sm-11
+					textarea.form-control(id="translation" name="translation")
+
+		section.row
+			button(type="button" class="btn btn-info" id="toMorse") Texto a Morse
 
 
 	script(src="/js/lib/socket.io-1.4.5.js" type="text/javascript")

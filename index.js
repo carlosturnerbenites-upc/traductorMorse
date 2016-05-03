@@ -5,6 +5,7 @@ var five = require('johnny-five'),
 	io = require('socket.io')(server),
 	bodyParser = require('body-parser'),
 	board,
+	decoder = require('./decoder.js'),
 
 	timePunto = 1000,// Pulso corto (en ms)
 	timeLine = timePunto * 1,// Pulso largo
@@ -12,7 +13,6 @@ var five = require('johnny-five'),
 	timeSpaceWord = timePunto * 7, // Sin pulso
 	timeStop = timePunto * 10, // Sin pulso
 	textMorse = '',
-	codesMorse = require('./codesMorse'),
 	pressCurrent = false,
 	timeForSpace,
 	timeForWord,
@@ -23,6 +23,10 @@ var five = require('johnny-five'),
 	symbolLine = '-',
 	hold = false
 
+var Decoder = new decoder({
+	symbolSpaceLetter: symbolSpaceLetter,
+	symbolSpaceWord: symbolSpaceWord
+})
 app.set('views', __dirname + '/views')
 app.set('view engine', 'jade')
 app.use(express.static('public'))
@@ -33,41 +37,6 @@ function setValue (value){
 	if(value == symbolSpaceWord && textMorse.slice(-1) == symbolSpaceLetter) textMorse = textMorse.replace(/\/$/,'')
 	textMorse += value
 	io.sockets.emit('write', { value: value, text:textMorse})
-}
-
-function decodeMorse (){
-	if(textMorse.slice(-1) == symbolSpaceWord) textMorse = textMorse.replace(/\|$/,'')
-
-	var words = textMorse.split(symbolSpaceWord)
-	words.forEach((word,indexW) => {
-		words[indexW] = word.split(symbolSpaceLetter)
-	})
-	words.forEach((word,indexW) => {
-		word.forEach((leter,indexL) => {
-			words[indexW][indexL] = codesMorse[leter]
-		})
-	})
-	var textDecode = ''
-	words.forEach(e => {
-		textDecode += e.join('') + ' '
-	})
-	io.sockets.emit('morseToText', { text:textDecode})
-}
-
-function decodeAbc(text){
-
-	var words = text.split(" ")
-	words.forEach((word,indexW) => {
-		words[indexW] = word.split("")
-	})
-	words.forEach((word,indexW) => {
-		word.forEach((leter,indexL) => {
-			words[indexW][indexL] = codesMorse[leter] + symbolSpaceLetter
-		})
-		words[indexW].push(symbolSpaceWord)
-	})
-	var textDecode = words.join().replace(/,/g, '').replace(/\/\|/g, '|')
-	io.sockets.emit('textToMorse', { text:textDecode})
 }
 
 io.on('connection', function (socket) {
@@ -83,6 +52,7 @@ app.post('/connect', function (req, res) {
 	board = new five.Board()
 
 	board.on('ready', function () {
+		res.json({msg: 'Conectado', status: 1})
 
 		var button = new five.Button({pin: 7,holdtime: timeLine})
 		button.on('hold', function () {
@@ -99,7 +69,11 @@ app.post('/connect', function (req, res) {
 				if(!pressCurrent) {setValue(symbolSpaceWord)}
 			},timeSpaceWord)
 
-			timeForStop = setTimeout(decodeMorse,timeStop)
+			timeForStop = setTimeout(() => {
+				var text = Decoder.toText(textMorse)
+				io.sockets.emit('morseToText', { text:text})
+
+			},timeStop)
 		})
 		button.on('down', function () {
 			pressCurrent = true
@@ -111,12 +85,11 @@ app.post('/connect', function (req, res) {
 			if(!hold) setValue(symbolPoint)
 			hold = false
 		})
-		res.send('connect')
 	})
 })
 app.post('/toMorse', function (req, res) {
 	var data = req.body
-	decodeAbc(data.text.toUpperCase())
+	res.send(Decoder.toMorse(data.text.toUpperCase()))
 })
 
 app.get('/', function (req, res) {res.render('index')})
