@@ -9,9 +9,9 @@ var five = require('johnny-five'),
 
 	timePunto = 1000,// Pulso corto (en ms)
 	timeLine = timePunto * 1,// Pulso largo
-	timeSpaceLetter = timePunto * 4, // Sin pulso
-	timeSpaceWord = timePunto * 7, // Sin pulso
-	timeStop = timePunto * 10, // Sin pulso
+	timeSpaceLetter = timePunto * 1.5, // Sin pulso
+	timeSpaceWord = timePunto * 2.5, // Sin pulso
+	timeStop = timePunto * 3.5, // Sin pulso
 	textMorse = '',
 	pressCurrent = false,
 	timeForSpace,
@@ -52,6 +52,7 @@ app.post('/connect', function (req, res) {
 	board = new five.Board()
 
 	board.on('ready', function () {
+		console.log(this.disconnect)
 		res.json({msg: 'Conectado', status: 1})
 
 		var button = new five.Button({pin: 7,holdtime: timeLine})
@@ -84,6 +85,13 @@ app.post('/connect', function (req, res) {
 		button.on('release', function () {
 			if(!hold) setValue(symbolPoint)
 			hold = false
+		})
+
+		this.on('exit', function () {
+			io.sockets.emit('disconnection', { msg: 'Desconectado', status: 0 })
+		})
+		this.on('close', function () {
+			io.sockets.emit('disconnection', { msg: 'Desconectado', status: 0 })
 		})
 	})
 })

@@ -7,6 +7,13 @@ socket.on('morseToText', function (data) {
 	console.log(data)
 	$("#translation").val(data.text)
 })
+socket.on('disconnection', function (data) {
+	$("#stateConection")
+		.removeClass("label-success")
+		.addClass("label-danger")
+		.html(data.msg)
+
+})
 socket.on('connection', function (data) {
 	$('#connect').click((e) => {
 		$.ajax({
