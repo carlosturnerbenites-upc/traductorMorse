@@ -43,6 +43,22 @@ io.on('connection', function (socket) {
 	socket.emit('connection', { msg: 'connection Success', status: 1 })
 })
 
+app.post('/action', function (req, res) {
+
+	clearTimeout(timeForSpace)
+	clearTimeout(timeForWord)
+	clearTimeout(timeForStop)
+
+	var action = req.body.action
+
+	if(action == 'reset'){
+		textMorse = ''
+	}else if(action == 'undo'){
+		textMorse = textMorse.slice(0, -1)
+	}
+	return res.send(textMorse)
+})
+
 app.post('/disconnect', function (req, res) {
 	board.disconnect()
 	res.send('disconnect')
@@ -52,7 +68,6 @@ app.post('/connect', function (req, res) {
 	board = new five.Board()
 
 	board.on('ready', function () {
-		console.log(this.disconnect)
 		res.json({msg: 'Conectado', status: 1})
 
 		var button = new five.Button({pin: 7,holdtime: timeLine})
@@ -95,6 +110,7 @@ app.post('/connect', function (req, res) {
 		})
 	})
 })
+
 app.post('/toMorse', function (req, res) {
 	var data = req.body
 	res.send(Decoder.toMorse(data.text.toUpperCase()))

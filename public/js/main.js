@@ -47,5 +47,21 @@ socket.on('connection', function (data) {
 			}
 		})
 	})
-	console.log(data)
+	$(document.body).keydown(e =>{
+		if (e.keyCode == 90 && e.ctrlKey){
+			console.log(e)
+			$("#undo").trigger("click")
+		}
+	})
+	$('#reset, #undo').click((e) => {
+
+		$.ajax({
+			type: 'POST',
+			url: '/action',
+			data : {action:$(e.target).data("action")},
+			success: function(result) {
+				$("#codeMorse").val(result)
+			}
+		})
+	})
 })
