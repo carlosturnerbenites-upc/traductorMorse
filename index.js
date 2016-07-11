@@ -118,4 +118,4 @@ app.post('/toMorse', function (req, res) {
 
 app.get('/', function (req, res) {res.render('index')})
 
-server.listen(8000)
+server.listen(process.env.PORT || 8000)
